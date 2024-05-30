@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://your-repository-url.git'
+                git 'https://github.com/AmirParyenti/TerraformMission.git'
             }
         }
         stage('Build Docker Image') {
