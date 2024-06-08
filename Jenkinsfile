@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/AmirParyenti/TerraformMission.git'
         EC2_HOST = '3.148.109.254'  // IP of your EC2 instance
         SSH_KEY_ID = 'EC2-SSH-Key'  // SSH key credential ID
     }
@@ -10,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: "$REPO_URL"
+                git branch: 'main', url: 'https://github.com/AmirParyenti/TerraformMission.git'
             }
         }
 
@@ -19,16 +18,13 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: "$SSH_KEY_ID",
-                            verbose: true,
+                            configName: "EC2 SSH",  // Name of the SSH server configuration in Jenkins
                             transfers: [
                                 sshTransfer(
-                                    sourceFiles: 'index.html',
-                                    removePrefix: 'src',  // Adjust this if your file is in a subdirectory
-                                    remoteDirectory: '/usr/share/nginx/html/',  // Default directory for Nginx
-                                    execCommand: """
-                                        sudo systemctl restart nginx
-                                    """
+                                    sourceFiles: '**/*.html',  // Adjust based on what needs to be transferred
+                                    removePrefix: 'src',  // Adjust if your file is in a subdirectory
+                                    remoteDirectory: '.',  // Adjust based on where you want files on the server
+                                    execCommand: 'sudo systemctl restart nginx'
                                 )
                             ]
                         )
