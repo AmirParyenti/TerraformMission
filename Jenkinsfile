@@ -1,46 +1,61 @@
 pipeline {
     agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub'  // Dockerhub credentials ID
+        AWS_CREDENTIALS_ID = 'AWS Amir IAM'  // AWS credentials ID
+        EC2_HOST = '3.148.109.254'  // IP of your EC2 instance
+        REPO_URL = 'https://github.com/AmirParyenti/TerraformMission.git'  // Your GitHub Repo URL
+        SSH_KEY_ID = 'EC2-SSH-Key'  // SSH key credential ID
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
-                git(
-                    url: 'https://github.com/AmirParyenti/TerraformMission.git',
-                    credentialsId: 'amir_github',
-                    branch: 'main'
-                )
+                git branch: 'main', url: "$REPO_URL"
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("my-nginx:${env.BUILD_ID}")
+                    docker.build("amirparyenti/myapp:${env.BUILD_ID}")
                 }
             }
         }
-        stage('Push Image to Registry') {
+
+        stage('Push Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
-                        docker.image("my-nginx:${env.BUILD_ID}").push()
+                    docker.withRegistry('', "$DOCKERHUB_CREDENTIALS_ID") {
+                        docker.image("amirparyenti/myapp:${env.BUILD_ID}").push()
                     }
                 }
             }
         }
+
         stage('Deploy to AWS EC2') {
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'sam-jenkins-demo-credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sshagent(['amir-ec2-ssh']) {
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@147.235.217.29 'docker pull my-nginx:${env.BUILD_ID}'"
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@147.235.217.29 'docker stop web || true && docker rm web || true'"
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@147.235.217.29 'docker run -d --name web -p 80:80 my-nginx:${env.BUILD_ID}'"
-                    }
-                }
+                sshPublisher(
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: "$SSH_KEY_ID",
+                            transfers: [
+                                sshTransfer(
+                                    sourceFiles: "docker-compose.yml",
+                                    removePrefix: "dist",
+                                    remoteDirectory: "/home/ubuntu/",
+                                    execCommand: """
+                                        docker pull amirparyenti/myapp:${env.BUILD_ID}
+                                        docker-compose -f /home/ubuntu/docker-compose.yml up -d
+                                    """
+                                )
+                            ],
+                            execCommand: "echo Deployment completed successfully"
+                        )
+                    ]
+                )
             }
-        }
-    }
-    post {
-        always {
-            cleanWs()
         }
     }
 }
