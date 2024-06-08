@@ -25,11 +25,11 @@ pipeline {
         }
         stage('Deploy to AWS EC2') {
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'Amir', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sshagent(['ec2-ssh-key']) {
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-public-dns 'docker pull my-nginx:${env.BUILD_ID}'"
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-public-dns 'docker stop web || true && docker rm web || true'"
-                        sh "ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-public-dns 'docker run -d --name web -p 80:80 my-nginx:${env.BUILD_ID}'"
+                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'sam-jenkins-demo-credentials', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sshagent(['amir-ec2-ssh']) {
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@147.235.217.29 'docker pull my-nginx:${env.BUILD_ID}'"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@147.235.217.29 'docker stop web || true && docker rm web || true'"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@147.235.217.29 'docker run -d --name web -p 80:80 my-nginx:${env.BUILD_ID}'"
                     }
                 }
             }
