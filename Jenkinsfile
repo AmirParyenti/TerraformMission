@@ -1,10 +1,13 @@
 pipeline {
     agent any
-
     stages {
-        stage('Clone Repository') {
+        stage('Checkout Code') {
             steps {
-                git 'https://github.com/AmirParyenti/TerraformMission.git'
+                git(
+                    url: 'https://github.com/AmirParyenti/TerraformMission.git',
+                    credentialsId: 'amir_github',
+                    branch: 'main'
+                )
             }
         }
         stage('Build Docker Image') {
