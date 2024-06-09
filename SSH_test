@@ -23,7 +23,7 @@ pipeline {
             steps {
                 script { 
                     // Use the key file to establish SSH connection
-                    sh "ssh -i $KEY_PATH ec2-user@3.15.223.55 'echo Connection successful'"
+                    sh "ssh -i $KEY_PATH -o StrictHostKeyChecking=no ec2-user@3.15.223.55 'echo Connection successful'"
                 }
             }
         }
