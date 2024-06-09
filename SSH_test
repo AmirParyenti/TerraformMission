@@ -11,11 +11,9 @@ pipeline {
                     // Bind the private key from Jenkins credentials and write to a file
                     withCredentials([sshUserPrivateKey(credentialsId: 'ec2-deployer-key', keyFileVariable: 'SSH_KEY')]) {
                         sh """
-                            set +x  // Disable command trace for security
+                            set +x  # Disable command trace for security
                             echo "\$SSH_KEY" > $KEY_PATH
-                            ls -la
-                            cat id_rsa
-                            chmod 600 $KEY_PATH  // Set the file permissions securely
+                            chmod 600 $KEY_PATH  # Set the file permissions securely
                         """
                     }
                 }
