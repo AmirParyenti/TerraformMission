@@ -1,38 +1,41 @@
 pipeline {
     agent any
     environment {
-        // Define the environment variable to store the key file path
-        KEY_PATH = "${WORKSPACE}/id_ed25519"
+        KEY_PATH = "${WORKSPACE}/id_ed25519"  // Assuming you are using an Ed25519 key, adjust if using RSA.
     }
     stages {
-        stage('Prepare SSH Key') {
+        stage('Prepare Environment') {
             steps {
                 script {
-                    // Bind the private key from Jenkins credentials and write to a file
-                    withCredentials([sshUserPrivateKey(credentialsId: 'amir-ed-key', keyFileVariable: 'SSH_KEY')]) {
-                        sh """
-                            set +x  # Disable command trace for security
-                            echo "\$SSH_KEY" > $KEY_PATH
-                            chmod 400 $KEY_PATH  # Set the file permissions securely
-                            sleep 180
-                        """
-                    }
+                    // Ensure .ssh directory exists and has appropriate permissions
+                    sh '''
+                        mkdir -p ~/.ssh
+                        chmod 700 ~/.ssh
+                    '''
                 }
             }
-        }
+        },
+        stage('Add Host Key') {
+            steps {
+                script {
+                    // Adding the host key of the EC2 instance to known_hosts
+                    sh 'ssh-keyscan -H 3.15.223.55 >> ~/.ssh/known_hosts'
+                }
+            }
+        },
         stage('Test SSH Connection') {
             steps {
-                script { 
-                    // Use the key file to establish SSH connection
-                    sh "ssh -i $KEY_PATH -o StrictHostKeyChecking=no ec2-user@3.15.223.55 'echo Connection successful'"
+                sshagent(credentials: ['shmuel']) {
+                  // Test SSH connection with a simple echo command
+                  sh 'ssh -o StrictHostKeyChecking=yes ec2-user@3.15.223.55 "echo Connection successful"'
                 }
             }
         }
     }
     post {
         always {
-            // Cleanup SSH key file
-            sh "rm -f $KEY_PATH"
+            // Cleanup tasks can be performed here if necessary
+            echo "Job completed. Cleanup can be performed here if necessary."
         }
     }
 }
