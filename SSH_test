@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         // Define the environment variable to store the key file path
-        KEY_PATH = "${WORKSPACE}/id_rsa"
+        KEY_PATH = "${WORKSPACE}/id_ed25519"
     }
     stages {
         stage('Prepare SSH Key') {
