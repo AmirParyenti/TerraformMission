@@ -13,23 +13,17 @@ pipeline {
             }
         }
 
-        stage('Transfer and Deploy to EC2') {
+        stage('Deploy to AWS EC2') {
             steps {
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: "EC2 SSH",  // Name of the SSH server configuration in Jenkins
-                            transfers: [
-                                sshTransfer(
-                                    sourceFiles: '**/*.html',  // Adjust based on what needs to be transferred
-                                    removePrefix: 'src',  // Adjust if your file is in a subdirectory
-                                    remoteDirectory: '.',  // Adjust based on where you want files on the server
-                                    execCommand: 'sudo systemctl restart nginx'
-                                )
-                            ]
-                        )
-                    ]
-                )
+                script {
+                    sshagent([SSH_KEY_ID]) {
+                        // Transfer files
+                        sh "scp -o StrictHostKeyChecking=no index.html ubuntu@${EC2_HOST}:/var/www/html/index.html"
+                        
+                        // Restart Nginx to apply changes
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_HOST} 'sudo systemctl restart nginx'"
+                    }
+                }
             }
         }
     }
