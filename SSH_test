@@ -1,12 +1,37 @@
 pipeline {
     agent any
+    environment {
+        // Define the environment variable to store the key file path
+        KEY_PATH = "${WORKSPACE}/id_rsa"
+    }
     stages {
-        stage('Test SSH Connection') {
+        stage('Prepare SSH Key') {
             steps {
                 script {
-                    sh "ssh"
+                    // Bind the private key from Jenkins credentials and write to a file
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ec2-deployer-key', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            set +x  // Disable command trace for security
+                            echo "\$SSH_KEY" > $KEY_PATH
+                            chmod 600 $KEY_PATH  // Set the file permissions securely
+                        """
+                    }
                 }
             }
+        }
+        stage('Test SSH Connection') {
+            steps {
+                script { 
+                    // Use the key file to establish SSH connection
+                    sh "ssh -i $KEY_PATH ec2-user@3.147.103.73 'echo Connection successful'"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            // Cleanup SSH key file
+            sh "rm -f $KEY_PATH"
         }
     }
 }
