@@ -9,7 +9,7 @@ pipeline {
             steps {
                 script {
                     // Bind the private key from Jenkins credentials and write to a file
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ssh-ec2-amir', keyFileVariable: 'SSH_KEY')]) {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'private-key-ec2', keyFileVariable: 'SSH_KEY')]) {
                         sh """
                             set +x  # Disable command trace for security
                             echo "\$SSH_KEY" > $KEY_PATH
