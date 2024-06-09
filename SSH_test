@@ -5,7 +5,6 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'ec2-user', keyFileVariable: 'SSH_KEY')]) {
-                        # Start the SSH agent and add the key
                         sshagent(['ec2-user']) {
                             sh "ssh -o StrictHostKeyChecking=no ec2-user@3.147.103.73 'echo Connection successful'"
                         }
