@@ -32,7 +32,6 @@ pipeline {
         always {
             // Cleanup SSH key file
             sh "rm -f $KEY_PATH"
-            script {
         }
     }
 }
