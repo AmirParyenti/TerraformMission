@@ -14,7 +14,7 @@ pipeline {
                     '''
                 }
             }
-        },
+        }
         stage('Add Host Key') {
             steps {
                 script {
@@ -22,7 +22,7 @@ pipeline {
                     sh 'ssh-keyscan -H 3.15.223.55 >> ~/.ssh/known_hosts'
                 }
             }
-        },
+        }
         stage('Test SSH Connection') {
             steps {
                 sshagent(credentials: ['shmuel']) {
