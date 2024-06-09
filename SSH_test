@@ -4,7 +4,7 @@ pipeline {
         stage('Test SSH Connection') {
             steps {
                 script {
-                    sshagent(['ec2-ssh-key']) {
+                    sshagent(['EC2-SSH-Key']) {
                         sh "ssh -o StrictHostKeyChecking=no ec2-user@3.148.109.254 echo 'SSH connection successful'"
                     }
                 }
