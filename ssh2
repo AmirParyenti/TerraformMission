@@ -1,1 +1,45 @@
+pipeline {
+    agent any
+    environment {
+        KEY_PATH = "${WORKSPACE}/id_rsa"
+    }
+    stages {
+        stage('Prepare SSH Key') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'amir-ed-key', keyFileVariable: 'SSH_KEY')]) {
+                        sh """
+                            set +x  # Disable command trace for security
+                            echo "\$SSH_KEY" > $KEY_PATH
+                            chmod 400 $KEY_PATH  # Set the file permissions securely
+                        """
+                    }
+                }
+            }
+        }
+        stage('Use SSH Key as ENV_VAR') {
+            steps {
+                script {
+                    env.SSH_KEY = readFile("${KEY_PATH}").trim()
+                    echo 'SSH Key loaded into environment variable SSH_KEY'
+                }
+            }
+        }
+        stage('Test SSH Connection') {
+            steps {
+                script {
+                    sh "ssh -i $KEY_PATH ec2-user@3.15.223.55 'echo Connection successful'"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            sh "rm -f $KEY_PATH"
+            script {
+                env.SSH_KEY = ''
+            }
+        }
+    }
+}
 
