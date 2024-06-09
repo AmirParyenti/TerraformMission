@@ -10,7 +10,6 @@ pipeline {
                 script {
                     // Bind the private key from Jenkins credentials and write to a file
                     withCredentials([sshUserPrivateKey(credentialsId: 'ec2-user', keyFileVariable: 'SSH_KEY')]) {
-                    env.SSH_KEY = readFile("${KEY_PATH}").trim() // Read the key into an env var
                         sh """
                             set +x  # Disable command trace for security
                             echo "\$SSH_KEY" > $KEY_PATH
