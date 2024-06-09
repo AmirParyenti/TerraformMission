@@ -18,10 +18,19 @@ pipeline {
                     }
                 }
             }
-        }
+        },
+        stage('Use SSH Key as ENV_VAR') {
+            steps {
+                script {
+                    // Inject the SSH key from file to an environment variable
+                    env.SSH_KEY = readFile("${KEY_PATH}").trim()
+                    echo 'SSH Key loaded into environment variable SSH_KEY'
+                }
+            }
+        },
         stage('Test SSH Connection') {
             steps {
-                script { 
+                script {
                     // Use the key file to establish SSH connection
                     sh "ssh -i $KEY_PATH ec2-user@3.147.103.73 'echo Connection successful'"
                 }
@@ -30,8 +39,11 @@ pipeline {
     }
     post {
         always {
-            // Cleanup SSH key file
+            // Cleanup SSH key file and clear the environment variable
             sh "rm -f $KEY_PATH"
+            script {
+                env.SSH_KEY = ''
+            }
         }
     }
 }
