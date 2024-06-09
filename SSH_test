@@ -1,0 +1,14 @@
+pipeline {
+    agent any
+    stages {
+        stage('Test SSH Connection') {
+            steps {
+                script {
+                    sshagent(['ec2-ssh-key']) {
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@3.148.109.254 echo 'SSH connection successful'"
+                    }
+                }
+            }
+        }
+    }
+}
