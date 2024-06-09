@@ -4,13 +4,18 @@ pipeline {
         stage('Test SSH Connection') {
             steps {
                 script {
-                    withCredentials([sshUserPrivateKey(credentialsId: 'ec2-user', keyFileVariable: 'SSH_KEY')]) {
-                        sshagent(['ec2-user']) {
-                            sh "ssh -o StrictHostKeyChecking=no ec2-user@3.147.103.73 'echo Connection successful'"
-                        }
+                    // Using sshagent to handle the SSH key securely
+                    sshagent([credentialsId: 'ec2-user']) {
+                        // The SSH command does not need to specify the key file, as the ssh agent handles it
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@3.147.103.73 'echo Connection successful'"
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+            echo "Cleanup not necessary as sshagent handles keys in memory."
         }
     }
 }
