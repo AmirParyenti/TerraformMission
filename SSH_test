@@ -14,7 +14,7 @@ pipeline {
                             set +x  # Disable command trace for security
                             echo "\$SSH_KEY" > $KEY_PATH
                             chmod 400 $KEY_PATH  # Set the file permissions securely
-                            cat KEY_PATH
+                            cat $KEY_PATH
                         """
                     }
                 }
